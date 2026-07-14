@@ -20,7 +20,7 @@ A minimalist, dark-mode-only todo list app that uses OpenRouter to generate smal
 
 - **Frontend:** Vite + React + TypeScript (minimal, fast, no framework bloat).
 - **Styling:** Plain CSS or Tailwind. Dark palette hardcoded. No theming system.
-- **AI:** OpenRouter Chat Completions API (`openrouter/z-ai/glm-5.2` or a cheap small model).
+- **AI:** OpenRouter Chat Completions API. Default model `openrouter/openai/gpt-4o-mini` (cheap, fast, good enough for one-liners). Configurable in Settings.
 - **Storage:** IndexedDB (via a tiny wrapper like `idb-keyval`) for items + AI outputs. Survives reloads, holds blobs, async-friendly. `localStorage` is a fallback if we want zero deps.
 - **Key management:** OpenRouter API key stored in `localStorage` under a known key, entered via a Settings panel. Acceptable for a personal local app; documented as a tradeoff.
 
@@ -34,7 +34,7 @@ type Item = {
   createdAt: number;
   updatedAt: number;
   ai?: AIOutput;           // generated notes, if any
-  aiSignature?: string;   // hash of the text the AI last saw
+  aiTextSignature?: string; // hash of the text the AI last saw (text-only, not whole item)
 };
 
 type AIOutput = {
@@ -49,9 +49,16 @@ type AIOutput = {
 ### When to (re)generate AI output
 
 - On item creation: generate once.
-- On item edit: compute a signature (e.g. `sha256(text.trim().toLowerCase())`). If it differs from `aiSignature`, regenerate.
-- Manual "regenerate" button per item (optional, opt-in).
+- On item edit: compute a signature from normalized text and compare against the **last signature stored for this specific item id**. Regeneration key is `(id, signature)` so reordering, merging, or splitting items that happen to share text doesn't cause false skips or false regens across siblings.
+- Normalization: `text.trim().toLowerCase()`. Regen triggers when the normalized text has **meaningfully changed** — measured by a small edit-distance threshold (e.g. Levenshtein distance > 3 chars or > 10% of length) rather than an exact hash. This avoids firing regens on 1-char typo fixes while still catching real edits.
+- Manual "regenerate" button per item (optional, opt-in). Bypasses the threshold check and forces a fresh call.
 - Never auto-regenerate on read, mount, or focus.
+
+### No-key / offline state
+
+- When no OpenRouter API key is set, the app behaves as a plain todo list: full CRUD, persistence, dark UI. No AI calls are attempted.
+- The AI panel for each item shows a "Set API key in Settings" hint instead of a spinner or error.
+- Adding a key later does not retroactively generate for existing items — only new items and subsequent edits trigger generation. (User can use the per-item "regenerate" button to backfill.)
 
 ## Features / UX
 
@@ -83,7 +90,7 @@ System prompt (concise, deterministic-ish):
 
 User content: the item text.
 
-Response parsed as JSON; on parse error or API failure, leave `ai` unset and mark `aiSignature` so we don't retry in a loop. Allow a manual retry.
+Response parsed as JSON; on parse error or API failure, leave `ai` unset and mark `aiTextSignature` so we don't retry in a loop. Allow a manual retry.
 
 ## Architecture / File Layout
 
@@ -112,8 +119,8 @@ src/
 ## State & Flow
 
 - `useItems` loads all items from IndexedDB on mount, keeps an in-memory list, writes through on every mutation.
-- Creating an item: persist → enqueue AI generation → on success, persist updated `ai` + `aiSignature`.
-- Editing an item: persist → if signature changed, enqueue AI generation.
+- Creating an item: persist → enqueue AI generation → on success, persist updated `ai` + `aiTextSignature` (keyed to the item's id).
+- Editing an item: persist → if signature changed beyond the edit-distance threshold, enqueue AI generation.
 - AI generation is debounced (e.g. 800ms after edit) and in-flight requests are cancellable to avoid races on rapid edits.
 
 ## Privacy & Safety
@@ -131,13 +138,12 @@ src/
 ## Milestones
 
 1. **Skeleton:** Vite + React + TS, dark styles, list CRUD with IndexedDB persistence. No AI yet.
-2. **AI integration:** OpenRouter client, signature-based regen, inline AI panel, loading/error states.
+2. **AI integration:** OpenRouter client, signature + edit-distance regen logic (keyed by `(id, signature)`), no-key fallback state, inline AI panel, loading/error states.
 3. **Settings:** API key + model picker + data reset.
 4. **Polish:** keyboard nav, empty states, micro-interactions, README.
 
 ## Open Questions
 
 - IndexedDB vs `localStorage`: IndexedDB is more capable; do we want the extra dep (`idb-keyval`)?
-- Model default: pick `openrouter/z-ai/glm-5.2` or a cheaper/smaller model? (Plan defaults to glm-5.2.)
 - Should "regenerate" be per-item only, or also a global "regenerate stale" sweep?
 - Do we want the AI panel inline (expanding the row) or as a side drawer for the selected item?
