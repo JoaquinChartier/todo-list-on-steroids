@@ -76,6 +76,10 @@ export function Settings({
           <datalist id="tos-models">
             {models.map((m) => (
               <option key={m.id} value={m.id}>
+                {m.pricePerMillion === 0
+                  ? "free"
+                  : `$${m.pricePerMillion.toFixed(2)}/M`}
+                {" — "}
                 {m.name}
               </option>
             ))}

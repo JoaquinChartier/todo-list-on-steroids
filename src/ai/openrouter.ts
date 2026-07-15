@@ -133,7 +133,26 @@ export function signatureChanged(item: { text: string; aiSignature?: string }, n
 export type ModelInfo = {
   id: string;
   name: string;
+  pricePerMillion: number;
 };
+
+// Max combined prompt+completion price per token we consider "cheap"
+// ($0.50 / 1M tokens). Free models (price 0) are always included.
+const CHEAP_THRESHOLD = 5e-7;
+
+function combinedPrice(pricing: unknown): number {
+  if (!pricing || typeof pricing !== "object") return Infinity;
+  const p = pricing as Record<string, unknown>;
+  const prompt = numOr(p.prompt);
+  const completion = numOr(p.completion);
+  if (!isFinite(prompt) || !isFinite(completion)) return Infinity;
+  return prompt + completion;
+}
+
+function numOr(v: unknown): number {
+  const n = typeof v === "string" ? parseFloat(v) : NaN;
+  return Number.isFinite(n) ? n : NaN;
+}
 
 export async function listModels(signal?: AbortSignal): Promise<ModelInfo[]> {
   let res: Response;
@@ -149,12 +168,19 @@ export async function listModels(signal?: AbortSignal): Promise<ModelInfo[]> {
   const data = await res.json();
   const list: unknown[] = Array.isArray(data?.data) ? data.data : [];
   return list
-    .map((m) => {
+    .map((m): ModelInfo | null => {
       const o = m as Record<string, unknown>;
       const id = typeof o.id === "string" ? o.id : "";
+      if (!id) return null;
       const name = typeof o.name === "string" ? o.name : id;
-      return id ? { id, name } : null;
+      const price = combinedPrice(o.pricing);
+      if (price > CHEAP_THRESHOLD) return null;
+      return {
+        id,
+        name,
+        pricePerMillion: price * 1_000_000,
+      };
     })
     .filter((m): m is ModelInfo => m != null)
-    .sort((a, b) => a.id.localeCompare(b.id));
+    .sort((a, b) => a.pricePerMillion - b.pricePerMillion || a.id.localeCompare(b.id));
 }

@@ -1,5 +1,7 @@
 import { useState } from "react";
 
+export const MAX_ITEM_TEXT = 80;
+
 type Props = {
   onAdd: (text: string) => void;
   disabled?: boolean;
@@ -19,6 +21,7 @@ export function AddItem({ onAdd, disabled }: Props) {
     <div className="add-item">
       <input
         type="text"
+        maxLength={MAX_ITEM_TEXT}
         value={text}
         placeholder="Add an item…"
         autoFocus

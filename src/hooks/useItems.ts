@@ -1,6 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 import type { Item, NewItemInput } from "../ai/types";
 import { listItems, putItem, deleteItem } from "../db/store";
+import { MAX_ITEM_TEXT } from "../components/AddItem";
+
+const MAX = MAX_ITEM_TEXT;
+
+function clampText(s: string): string {
+  return s.length > MAX ? s.slice(0, MAX) : s;
+}
 
 function uuid(): string {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
@@ -40,7 +47,7 @@ export function useItems(): UseItems {
     const now = Date.now();
     const item: Item = {
       id: uuid(),
-      text: input.text.trim(),
+      text: clampText(input.text.trim()),
       done: input.done ?? false,
       createdAt: now,
       updatedAt: now,

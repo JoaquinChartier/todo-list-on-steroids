@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
+import { MAX_ITEM_TEXT } from "./AddItem";
+
 type Props = {
   initialText: string;
   onCommit: (text: string) => void;
@@ -20,6 +22,7 @@ export function ItemEditor({ initialText, onCommit, onCancel }: Props) {
       ref={ref}
       type="text"
       className="item-editor"
+      maxLength={MAX_ITEM_TEXT}
       value={text}
       onChange={(e) => setText(e.target.value)}
       onBlur={() => {
