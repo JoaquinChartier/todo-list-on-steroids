@@ -60,10 +60,32 @@ type AIOutput = {
 - The AI panel for each item shows a "Set API key in Settings" hint instead of a spinner or error.
 - Adding a key later does not retroactively generate for existing items — only new items and subsequent edits trigger generation. (User can use the per-item "regenerate" button to backfill.)
 
+### AI error UX
+
+The AI panel distinguishes failure states rather than silently going blank:
+
+- **No key:** "Set API key in Settings" hint. No retry button (retrying without a key is pointless).
+- **Rate limited (429):** "Rate limited — wait a moment" + retry button.
+- **Network error / non-2xx:** "Couldn't reach OpenRouter" + retry button.
+- **Bad JSON / truncated response:** "Couldn't parse AI response" + retry button.
+- **Loading:** spinner + cancellable "stop" affordance.
+- **Success:** shows suggestion / followup / question, generated-at timestamp, model name.
+
+Each failure records the failure reason in the item's in-memory state (not necessarily persisted) so the UI can render the right copy. A failed generation does **not** set `aiTextSignature`, so the item is still eligible for a future auto-retry (see below).
+
+### Interrupted vs failed generations across reloads
+
+- A generation that was in-flight when the tab closed leaves the item with **no `ai` and no `aiTextSignature`**. On next mount, `useItems` detects items in this state (no `ai`, no signature) and enqueues **one** auto-retry per item. This only happens once per mount; if it fails again it becomes a manual-retry item.
+- A generation that **failed** (network/parse/rate-limit) also leaves no `ai` and no signature — same bucket, same one-auto-retry-on-mount rule.
+- A generation that **succeeded** sets both `ai` and `aiTextSignature`. These are never touched on mount.
+
+Net effect: on reload, any item that never got a successful generation gets exactly one fresh attempt automatically; everything else waits for user action.
+
 ## Features / UX
 
 1. **List view**
    - Single column of items. Checkbox to complete, strikethrough on done.
+   - **Order:** newest first (by `createdAt` desc). Done items stay in place (not shuffled to bottom) to preserve context; user can delete completed ones manually.
    - Inline edit on click; Enter saves, Esc cancels.
    - Delete on hover (small ×).
    - "Add item" input pinned at top.
@@ -82,6 +104,11 @@ type AIOutput = {
 4. **Dark mode only**
    - Hardcoded dark palette. No toggle. No theme infrastructure.
 
+5. **First-run / empty state**
+   - When the list is empty: friendly placeholder ("Nothing to do yet — add your first item above.").
+   - When no OpenRouter key is set, the empty state also shows a subtle prompt: "Tip: add your OpenRouter API key in Settings to get AI suggestions, follow-ups, and questions on each item." This persists (not a one-time toast) until a key is set, so it's discoverable without being intrusive.
+   - Once at least one item exists and a key is set, the empty-state UI is gone entirely.
+
 ## AI Prompt
 
 System prompt (concise, deterministic-ish):
@@ -90,7 +117,13 @@ System prompt (concise, deterministic-ish):
 
 User content: the item text.
 
-Response parsed as JSON; on parse error or API failure, leave `ai` unset and mark `aiTextSignature` so we don't retry in a loop. Allow a manual retry.
+Response parsed as JSON; on parse error or API failure, leave `ai` unset and do **not** set `aiTextSignature` (so the item stays eligible for auto-retry on next mount). Allow a manual retry.
+
+### Input caps
+
+- Item text is capped at **500 characters** (soft client-side limit, enforced in the editor with a counter).
+- When building the prompt, if text somehow exceeds the cap (e.g. imported), truncate to 500 chars and append `…` — never send unbounded input to the model.
+- Number of items: no hard cap, but the AI generation queue is sequential (concurrency=1) so a huge backlog degrades gracefully rather than flooding OpenRouter.
 
 ## Architecture / File Layout
 
@@ -122,6 +155,7 @@ src/
 - Creating an item: persist → enqueue AI generation → on success, persist updated `ai` + `aiTextSignature` (keyed to the item's id).
 - Editing an item: persist → if signature changed beyond the edit-distance threshold, enqueue AI generation.
 - AI generation is debounced (e.g. 800ms after edit) and in-flight requests are cancellable to avoid races on rapid edits.
+- **Concurrency & cancellation rule:** the generation queue runs with concurrency=1 per item id. If a new edit arrives for an item while a generation for that same id is in-flight, the in-flight request is **aborted** (via `AbortController`), the pending generation is cancelled, and a fresh one is enqueued 800ms after the last keystroke. Only one generation per item id is ever active at a time. Edits to *other* items are unaffected and queue independently.
 
 ## Privacy & Safety
 
@@ -133,12 +167,13 @@ src/
 
 - `npm run dev` — Vite dev server.
 - `npm run build` — production build to `dist/`, served as static files.
+- **Hosting:** local-only. No deploy target (no GitHub Pages / Vercel). The built `dist/` is opened/served locally by the user; Vite base path stays default. The repo is not wired to any CI/CD.
 - `.env` only holds non-secret defaults (e.g. default model id). The API key is NOT in env.
 
 ## Milestones
 
 1. **Skeleton:** Vite + React + TS, dark styles, list CRUD with IndexedDB persistence. No AI yet.
-2. **AI integration:** OpenRouter client, signature + edit-distance regen logic (keyed by `(id, signature)`), no-key fallback state, inline AI panel, loading/error states.
+2. **AI integration:** OpenRouter client, signature + edit-distance regen logic (keyed by `(id, signature)`), no-key fallback state, interrupted/failed-on-mount auto-retry, error UX (no-key / rate-limited / network / bad-JSON states), input caps, inline AI panel, loading/error states.
 3. **Settings:** API key + model picker + data reset.
 4. **Polish:** keyboard nav, empty states, micro-interactions, README.
 
