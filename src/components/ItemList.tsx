@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { Item } from "../ai/types";
 import { ItemRow } from "./Item";
 
@@ -18,23 +19,49 @@ export function ItemList({
   onCommitEdit,
   onDelete,
 }: Props) {
+  const [showCompleted, setShowCompleted] = useState(false);
+
   if (items.length === 0) {
     return <p className="empty-state">No items yet. Add one above.</p>;
   }
 
+  const active = items.filter((i) => !i.done);
+  const completed = items.filter((i) => i.done);
+
+  const renderItem = (item: Item) => (
+    <ItemRow
+      key={item.id}
+      item={item}
+      loading={loadingIds.has(item.id)}
+      hasApiKey={hasApiKey}
+      onToggleDone={onToggleDone}
+      onCommitEdit={onCommitEdit}
+      onDelete={onDelete}
+    />
+  );
+
   return (
-    <ul className="item-list">
-      {items.map((item) => (
-        <ItemRow
-          key={item.id}
-          item={item}
-          loading={loadingIds.has(item.id)}
-          hasApiKey={hasApiKey}
-          onToggleDone={onToggleDone}
-          onCommitEdit={onCommitEdit}
-          onDelete={onDelete}
-        />
-      ))}
-    </ul>
+    <div className="item-list-wrap">
+      {active.length > 0 ? (
+        <ul className="item-list">{active.map(renderItem)}</ul>
+      ) : (
+        <p className="empty-state">All done. Nice work.</p>
+      )}
+
+      {completed.length > 0 && (
+        <div className="completed-toggle">
+          <button
+            type="button"
+            className="ghost-btn sm"
+            onClick={() => setShowCompleted((v) => !v)}
+          >
+            {showCompleted ? "Hide" : "Show"} {completed.length} completed
+          </button>
+          {showCompleted && (
+            <ul className="item-list">{completed.map(renderItem)}</ul>
+          )}
+        </div>
+      )}
+    </div>
   );
 }

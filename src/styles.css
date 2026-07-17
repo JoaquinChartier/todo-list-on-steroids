@@ -227,6 +227,22 @@ body {
   padding: 0;
 }
 
+.completed-toggle {
+  margin-top: 0.75rem;
+}
+.completed-toggle .item-list {
+  margin-top: 0.5rem;
+}
+
+.ghost-btn.sm {
+  font-size: 0.8rem;
+  padding: 0.25rem 0.55rem;
+  color: var(--text-dim);
+}
+.ghost-btn.sm:hover {
+  color: var(--text);
+}
+
 .item {
   border: 1px solid var(--border);
   border-radius: var(--radius);
