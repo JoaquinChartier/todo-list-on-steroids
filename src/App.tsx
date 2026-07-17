@@ -90,7 +90,7 @@ export function App() {
         </button>
       </header>
 
-      <AddItem onAdd={handleAdd} />
+      <AddItem onAdd={handleAdd} apiKey={settings.apiKey} />
 
       <main>
         {loaded ? (

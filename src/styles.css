@@ -122,6 +122,82 @@ body {
   cursor: not-allowed;
 }
 
+/* Voice input */
+.mic-btn {
+  font: inherit;
+  font-size: 1rem;
+  line-height: 1;
+  color: var(--text-dim);
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.55rem 0.6rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.12s ease, border-color 0.12s ease, color 0.12s;
+}
+.mic-btn:hover {
+  border-color: var(--text-dim);
+  color: var(--text);
+}
+.mic-btn.recording {
+  color: #fff;
+  background: #ef4444;
+  border-color: #ef4444;
+  animation: mic-pulse-rec 1s ease-in-out infinite;
+}
+.mic-btn.transcribing {
+  opacity: 0.6;
+  cursor: wait;
+}
+.mic-btn.recording {
+  padding: 0.45rem 0.55rem;
+}
+.mic-meter {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 16px;
+}
+.mic-bar {
+  display: inline-block;
+  width: 2px;
+  height: 100%;
+  background: currentColor;
+  border-radius: 1px;
+  transform-origin: center;
+  transform: scaleY(0.2);
+  transition: transform 0.06s linear;
+}
+.mic-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: mic-spin 0.8s linear infinite;
+}
+@keyframes mic-pulse-rec {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5); }
+  50% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+}
+@keyframes mic-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.add-item input:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+.mic-error {
+  color: var(--danger, #ef4444);
+  font-size: 0.75rem;
+  align-self: center;
+}
+
 .ghost-btn {
   background: transparent;
 }
