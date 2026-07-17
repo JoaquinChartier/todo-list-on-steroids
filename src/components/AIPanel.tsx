@@ -42,7 +42,7 @@ export function AIPanel({ ai, loading }: Props) {
             <li>{ai.question}</li>
           </ul>
           <div className="ai-meta">
-            <span>{new Date(ai.generatedAt).toLocaleString()}</span>
+            <span>{new Date(ai.generatedAt).toLocaleDateString("en-GB", { year: "2-digit", month: "2-digit", day: "2-digit" })}</span>
             <span className="ai-model">{ai.model}</span>
           </div>
         </div>
