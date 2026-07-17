@@ -3,6 +3,7 @@ import type { AIOutput } from "./types";
 const OPENROUTER_BASE = "https://openrouter.ai/api/v1";
 const OPENROUTER_URL = `${OPENROUTER_BASE}/chat/completions`;
 const MODELS_URL = `${OPENROUTER_BASE}/models`;
+const STT_URL = `${OPENROUTER_BASE}/audio/transcriptions`;
 
 const SYSTEM_PROMPT =
   "You are a minimalist productivity assistant. For the given todo item, " +
@@ -124,6 +125,69 @@ export async function computeSignature(text: string): Promise<string> {
   const hash = await crypto.subtle.digest("SHA-256", buf);
   const arr = Array.from(new Uint8Array(hash));
   return arr.map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+const DEFAULT_STT_MODEL = "openai/whisper-1";
+
+type TranscribeOptions = {
+  apiKey: string;
+  audio: Blob;
+  model?: string;
+  language?: string;
+  signal?: AbortSignal;
+};
+
+export async function transcribeAudio(
+  opts: TranscribeOptions,
+): Promise<string> {
+  const { apiKey, audio, model = DEFAULT_STT_MODEL, language, signal } = opts;
+  if (!apiKey) {
+    throw new Error("Missing OpenRouter API key");
+  }
+
+  const format = (audio.type.split("/")[1] || "webm").split(";")[0];
+  const arrayBuffer = await audio.arrayBuffer();
+  const bytes = new Uint8Array(arrayBuffer);
+  let binary = "";
+  const chunkSize = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+  }
+  const base64 = btoa(binary);
+
+  let res: Response;
+  try {
+    res = await fetch(STT_URL, {
+      method: "POST",
+      signal,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+        "HTTP-Referer": window.location.origin,
+        "X-Title": "Todo List on Steroids",
+      },
+      body: JSON.stringify({
+        model,
+        input_audio: { data: base64, format },
+        ...(language ? { language } : {}),
+      }),
+    });
+  } catch (err) {
+    if ((err as Error).name === "AbortError") throw err;
+    throw new Error(`Network error: ${(err as Error).message}`);
+  }
+
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new Error(`OpenRouter STT error ${res.status}: ${body.slice(0, 200)}`);
+  }
+
+  const data = await res.json();
+  const text: string | undefined = data?.text;
+  if (!text) {
+    throw new Error("Empty transcription response");
+  }
+  return text.trim();
 }
 
 export type ModelInfo = {
