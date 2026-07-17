@@ -158,6 +158,25 @@ body {
   opacity: 0.6;
   cursor: wait;
 }
+.mic-btn.recording {
+  padding: 0.45rem 0.55rem;
+}
+.mic-meter {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 16px;
+}
+.mic-bar {
+  display: inline-block;
+  width: 2px;
+  height: 100%;
+  background: currentColor;
+  border-radius: 1px;
+  transform-origin: center;
+  transform: scaleY(0.2);
+  transition: transform 0.06s linear;
+}
 .mic-spinner {
   display: inline-block;
   width: 14px;

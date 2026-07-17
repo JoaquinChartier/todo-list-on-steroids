@@ -184,10 +184,7 @@ export async function transcribeAudio(
 
   const data = await res.json();
   const text: string | undefined = data?.text;
-  if (!text) {
-    throw new Error("Empty transcription response");
-  }
-  return text.trim();
+  return (text || "").trim();
 }
 
 export type ModelInfo = {

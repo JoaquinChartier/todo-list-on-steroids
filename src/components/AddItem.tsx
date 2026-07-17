@@ -16,6 +16,7 @@ export function AddItem({ onAdd, apiKey }: Props) {
     transcript,
     error,
     supported,
+    level,
     start,
     stop,
     cancel,
@@ -94,9 +95,13 @@ export function AddItem({ onAdd, apiKey }: Props) {
           disabled={transcribing && !recording}
         >
           {recording ? (
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <rect x="6" y="6" width="12" height="12" rx="2" />
-            </svg>
+            <span className="mic-meter" aria-hidden="true">
+              <span className="mic-bar" style={{ transform: `scaleY(${Math.max(0.15, level * 3)})` }} />
+              <span className="mic-bar" style={{ transform: `scaleY(${Math.max(0.25, level * 4.2)})` }} />
+              <span className="mic-bar" style={{ transform: `scaleY(${Math.max(0.2, level * 3.6)})` }} />
+              <span className="mic-bar" style={{ transform: `scaleY(${Math.max(0.3, level * 4.8)})` }} />
+              <span className="mic-bar" style={{ transform: `scaleY(${Math.max(0.15, level * 3.2)})` }} />
+            </span>
           ) : transcribing ? (
             <span className="mic-spinner" aria-hidden="true" />
           ) : (
