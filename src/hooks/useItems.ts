@@ -16,13 +16,12 @@ function uuid(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
-export type UseItems = {
+type UseItems = {
   items: Item[];
   loaded: boolean;
   createItem: (input: NewItemInput) => Promise<Item>;
   updateItem: (id: string, patch: Partial<Item>) => Promise<Item | undefined>;
   removeItem: (id: string) => Promise<void>;
-  patchInMemory: (id: string, patch: Partial<Item>) => void;
 };
 
 export function useItems(): UseItems {
@@ -81,11 +80,5 @@ export function useItems(): UseItems {
     await deleteItem(id);
   }, []);
 
-  const patchInMemory = useCallback((id: string, patch: Partial<Item>) => {
-    setItems((prev) =>
-      prev.map((it) => (it.id === id ? { ...it, ...patch } : it)),
-    );
-  }, []);
-
-  return { items, loaded, createItem, updateItem, removeItem, patchInMemory };
+  return { items, loaded, createItem, updateItem, removeItem };
 }

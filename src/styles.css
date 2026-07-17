@@ -101,8 +101,6 @@ body {
 .primary-btn,
 .ghost-btn,
 .danger-btn,
-.regen-btn,
-.ai-toggle,
 .delete-btn {
   font: inherit;
   color: var(--text);

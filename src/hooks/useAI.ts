@@ -14,7 +14,7 @@ type Pending = {
   debounceTimer: number | null;
 };
 
-export type GenerateFn = (item: Item, opts?: { immediate?: boolean }) => void;
+type GenerateFn = (item: Item, opts?: { immediate?: boolean }) => void;
 
 export function useAI(
   config: Config,

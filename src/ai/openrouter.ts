@@ -11,14 +11,14 @@ const SYSTEM_PROMPT =
   "`question` (one clarifying question). Max ~12 words each. No preamble. " +
   "Return only the JSON object.";
 
-export type GenerateOptions = {
+type GenerateOptions = {
   apiKey: string;
   model: string;
   text: string;
   signal?: AbortSignal;
 };
 
-export class AIGenerationError extends Error {
+class AIGenerationError extends Error {
   constructor(message: string, public readonly retryable: boolean) {
     super(message);
     this.name = "AIGenerationError";
@@ -124,10 +124,6 @@ export async function computeSignature(text: string): Promise<string> {
   const hash = await crypto.subtle.digest("SHA-256", buf);
   const arr = Array.from(new Uint8Array(hash));
   return arr.map((b) => b.toString(16).padStart(2, "0")).join("");
-}
-
-export function signatureChanged(item: { text: string; aiSignature?: string }, nextSignature: string): boolean {
-  return item.aiSignature !== nextSignature;
 }
 
 export type ModelInfo = {

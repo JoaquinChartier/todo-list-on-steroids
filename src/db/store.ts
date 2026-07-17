@@ -17,10 +17,6 @@ export async function listItems(): Promise<Item[]> {
     .sort((a, b) => b.createdAt - a.createdAt);
 }
 
-export async function getItem(id: string): Promise<Item | undefined> {
-  return get<Item>(itemKey(id), store);
-}
-
 export async function putItem(item: Item): Promise<void> {
   await set(itemKey(item.id), item, store);
 }

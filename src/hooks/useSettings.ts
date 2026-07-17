@@ -6,7 +6,7 @@ const KEY_MODEL = "tos.openrouter.model";
 const DEFAULT_MODEL =
   import.meta.env.VITE_DEFAULT_MODEL ?? "openrouter/z-ai/glm-5.2";
 
-export type Settings = {
+type Settings = {
   apiKey: string;
   model: string;
   setApiKey: (v: string) => void;

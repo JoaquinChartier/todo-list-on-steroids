@@ -4,10 +4,9 @@ export const MAX_ITEM_TEXT = 80;
 
 type Props = {
   onAdd: (text: string) => void;
-  disabled?: boolean;
 };
 
-export function AddItem({ onAdd, disabled }: Props) {
+export function AddItem({ onAdd }: Props) {
   const [text, setText] = useState("");
 
   const submit = () => {
@@ -25,7 +24,6 @@ export function AddItem({ onAdd, disabled }: Props) {
         value={text}
         placeholder="Add an item…"
         autoFocus
-        disabled={disabled}
         onChange={(e) => setText(e.target.value)}
         onKeyDown={(e) => {
           if (e.key === "Enter") {
@@ -34,7 +32,7 @@ export function AddItem({ onAdd, disabled }: Props) {
           }
         }}
       />
-      <button type="button" className="add-btn" onClick={submit} disabled={disabled || !text.trim()}>
+      <button type="button" className="add-btn" onClick={submit} disabled={!text.trim()}>
         Add
       </button>
     </div>
