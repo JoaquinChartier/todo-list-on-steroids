@@ -8,7 +8,6 @@ type Props = {
   onToggleDone: (item: Item) => void;
   onCommitEdit: (item: Item, nextText: string) => void;
   onDelete: (item: Item) => void;
-  onRegenerate: (item: Item) => void;
 };
 
 export function ItemList({
@@ -18,7 +17,6 @@ export function ItemList({
   onToggleDone,
   onCommitEdit,
   onDelete,
-  onRegenerate,
 }: Props) {
   if (items.length === 0) {
     return <p className="empty-state">No items yet. Add one above.</p>;
@@ -35,7 +33,6 @@ export function ItemList({
           onToggleDone={onToggleDone}
           onCommitEdit={onCommitEdit}
           onDelete={onDelete}
-          onRegenerate={onRegenerate}
         />
       ))}
     </ul>

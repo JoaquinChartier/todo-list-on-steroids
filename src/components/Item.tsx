@@ -10,7 +10,6 @@ type Props = {
   onToggleDone: (item: Item) => void;
   onCommitEdit: (item: Item, nextText: string) => void;
   onDelete: (item: Item) => void;
-  onRegenerate: (item: Item) => void;
 };
 
 export function ItemRow({
@@ -20,10 +19,8 @@ export function ItemRow({
   onToggleDone,
   onCommitEdit,
   onDelete,
-  onRegenerate,
 }: Props) {
   const [editing, setEditing] = useState(false);
-  const [expanded, setExpanded] = useState(false);
 
   return (
     <li className={`item${item.done ? " done" : ""}`}>
@@ -54,15 +51,6 @@ export function ItemRow({
         )}
         <button
           type="button"
-          className="ai-toggle"
-          onClick={() => setExpanded((v) => !v)}
-          aria-expanded={expanded}
-          title="Toggle AI notes"
-        >
-          {expanded ? "▾" : "▸"}
-        </button>
-        <button
-          type="button"
           className="delete-btn"
           onClick={() => onDelete(item)}
           title="Delete"
@@ -70,16 +58,12 @@ export function ItemRow({
           ×
         </button>
       </div>
-      {expanded && (
-        <div className="item-ai">
-          {hasApiKey ? (
-            <AIPanel ai={item.ai} loading={loading} onRegenerate={() => onRegenerate(item)} />
-          ) : (
-            <p className="ai-empty">
-              Add your OpenRouter API key in Settings to generate AI notes.
-            </p>
-          )}
-        </div>
+      {hasApiKey ? (
+        <AIPanel ai={item.ai} loading={loading} />
+      ) : (
+        <p className="ai-line empty">
+          Add your OpenRouter API key in Settings to generate AI notes.
+        </p>
       )}
     </li>
   );

@@ -56,17 +56,6 @@ export function App() {
     [updateItem, generate],
   );
 
-  const handleRegenerate = useCallback(
-    (item: Item) => {
-      if (!settings.apiKey) {
-        setSettingsOpen(true);
-        return;
-      }
-      generate(item, { immediate: true });
-    },
-    [generate, settings.apiKey],
-  );
-
   const handleToggleDone = useCallback(
     (item: Item) => {
       updateItem(item.id, { done: !item.done });
@@ -112,7 +101,6 @@ export function App() {
             onToggleDone={handleToggleDone}
             onCommitEdit={handleCommitEdit}
             onDelete={handleDelete}
-            onRegenerate={handleRegenerate}
           />
         ) : (
           <p className="empty-state">Loading…</p>

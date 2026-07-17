@@ -1,49 +1,52 @@
+import { useState } from "react";
 import type { AIOutput } from "../ai/types";
 
 type Props = {
   ai?: AIOutput;
   loading: boolean;
-  onRegenerate: () => void;
 };
 
-export function AIPanel({ ai, loading, onRegenerate }: Props) {
+export function AIPanel({ ai, loading }: Props) {
+  const [metaOpen, setMetaOpen] = useState(false);
+
   if (loading) {
     return (
-      <div className="ai-panel loading" aria-busy="true">
-        <ul className="ai-list">
-          <li><span className="ai-shimmer" /></li>
-          <li><span className="ai-shimmer" /></li>
-          <li><span className="ai-shimmer" /></li>
-        </ul>
+      <div className="ai-line loading" aria-busy="true">
+        <span className="ai-shimmer" />
       </div>
     );
   }
 
   if (!ai) {
-    return (
-      <div className="ai-panel empty">
-        <p className="ai-empty">No AI notes yet.</p>
-        <button type="button" className="regen-btn" onClick={onRegenerate}>
-          Generate
-        </button>
-      </div>
-    );
+    return <p className="ai-line empty">No AI notes.</p>;
   }
 
+  const summary = `${ai.suggestion} · ${ai.followup} · ${ai.question}`;
+
   return (
-    <div className="ai-panel">
-      <ul className="ai-list">
-        <li>{ai.suggestion}</li>
-        <li>{ai.followup}</li>
-        <li>{ai.question}</li>
-      </ul>
-      <div className="ai-meta">
-        <span>{new Date(ai.generatedAt).toLocaleString()}</span>
-        <span className="ai-model">{ai.model}</span>
-        <button type="button" className="regen-btn" onClick={onRegenerate}>
-          Regenerate
-        </button>
-      </div>
+    <div className="ai-wrap">
+      {!metaOpen && (
+        <p
+          className="ai-line"
+          title={summary}
+          onClick={() => setMetaOpen(true)}
+        >
+          {summary}
+        </p>
+      )}
+      {metaOpen && (
+        <div className="ai-detail">
+          <ul className="ai-list" onClick={() => setMetaOpen(false)}>
+            <li>{ai.suggestion}</li>
+            <li>{ai.followup}</li>
+            <li>{ai.question}</li>
+          </ul>
+          <div className="ai-meta">
+            <span>{new Date(ai.generatedAt).toLocaleString()}</span>
+            <span className="ai-model">{ai.model}</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
