@@ -80,7 +80,7 @@ export function App() {
   return (
     <div className="app">
       <header className="app-header">
-        <h1>Todos <span>on Steroids</span></h1>
+        <h1>TODOs <span>on Steroids</span></h1>
         <button
           type="button"
           className="ghost-btn"
