@@ -1,7 +1,14 @@
 import { useState } from "react";
-import type { Item } from "../ai/types";
+import type { Item, Priority } from "../ai/types";
 import { ItemEditor } from "./ItemEditor";
 import { AIPanel } from "./AIPanel";
+
+const PRIORITY_LABEL: Record<Priority, string> = {
+  low: "low",
+  medium: "med",
+  high: "high",
+  urgent: "urgent",
+};
 
 type Props = {
   item: Item;
@@ -31,6 +38,11 @@ export function ItemRow({
           onChange={() => onToggleDone(item)}
           aria-label="toggle done"
         />
+        {item.priority && (
+          <span className={`priority-badge ${item.priority}`}>
+            {PRIORITY_LABEL[item.priority]}
+          </span>
+        )}
         {editing ? (
           <ItemEditor
             initialText={item.text}

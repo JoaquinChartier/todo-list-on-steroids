@@ -17,7 +17,11 @@ export function App() {
 
   const applyResult = useCallback(
     (itemId: string, result: Item["ai"], signature: string) => {
-      updateItem(itemId, { ai: result, aiSignature: signature });
+      updateItem(itemId, {
+        ai: result,
+        aiSignature: signature,
+        priority: result?.priority,
+      });
     },
     [updateItem],
   );

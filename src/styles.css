@@ -265,7 +265,48 @@ body {
   accent-color: var(--accent);
   width: 16px;
   height: 16px;
+}
+
+.priority-badge {
   flex-shrink: 0;
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  background: var(--bg-elev);
+}
+.priority-badge.low {
+  color: #9ca3af;
+  border-color: #4b5563;
+}
+.priority-badge.medium {
+  color: #fbbf24;
+  border-color: #92651a;
+  background: rgba(251, 191, 36, 0.08);
+}
+.priority-badge.high {
+  color: #fb923c;
+  border-color: #9a3412;
+  background: rgba(251, 146, 60, 0.1);
+}
+.priority-badge.urgent {
+  color: #f87171;
+  border-color: #991b1b;
+  background: rgba(248, 113, 113, 0.12);
+}
+
+.list-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.5rem;
+}
+.ghost-btn.active {
+  color: var(--accent);
+  border-color: var(--accent);
 }
 
 .item-text {
