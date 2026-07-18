@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { Item } from "../ai/types";
+import { PRIORITY_ORDER } from "../ai/types";
 import { ItemRow } from "./Item";
 
 type Props = {
@@ -20,13 +21,23 @@ export function ItemList({
   onDelete,
 }: Props) {
   const [showCompleted, setShowCompleted] = useState(false);
+  const [sortByPriority, setSortByPriority] = useState(false);
 
   if (items.length === 0) {
     return <p className="empty-state">No items yet. Add one above.</p>;
   }
 
-  const active = items.filter((i) => !i.done);
+  let active = items.filter((i) => !i.done);
   const completed = items.filter((i) => i.done);
+
+  if (sortByPriority) {
+    active = [...active].sort((a, b) => {
+      const pa = a.priority ? PRIORITY_ORDER[a.priority] : 99;
+      const pb = b.priority ? PRIORITY_ORDER[b.priority] : 99;
+      if (pa !== pb) return pa - pb;
+      return a.createdAt - b.createdAt;
+    });
+  }
 
   const renderItem = (item: Item) => (
     <ItemRow
@@ -42,6 +53,17 @@ export function ItemList({
 
   return (
     <div className="item-list-wrap">
+      {active.length > 0 && (
+        <div className="list-toolbar">
+          <button
+            type="button"
+            className={`ghost-btn sm${sortByPriority ? " active" : ""}`}
+            onClick={() => setSortByPriority((v) => !v)}
+          >
+            {sortByPriority ? "✓ " : ""}Sort by priority
+          </button>
+        </div>
+      )}
       {active.length > 0 ? (
         <ul className="item-list">{active.map(renderItem)}</ul>
       ) : (

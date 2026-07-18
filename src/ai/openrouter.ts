@@ -1,4 +1,4 @@
-import type { AIOutput } from "./types";
+import type { AIOutput, Priority } from "./types";
 
 const OPENROUTER_BASE = "https://openrouter.ai/api/v1";
 const OPENROUTER_URL = `${OPENROUTER_BASE}/chat/completions`;
@@ -7,10 +7,20 @@ const STT_URL = `${OPENROUTER_BASE}/audio/transcriptions`;
 
 const SYSTEM_PROMPT =
   "You are a minimalist productivity assistant. For the given todo item, " +
-  "return JSON with three short strings: `suggestion` (a concrete tip to start " +
-  "or finish it), `followup` (the natural next step after it's done), " +
-  "`question` (one clarifying question). Max ~12 words each. No preamble. " +
-  "Return only the JSON object.";
+  "return JSON with three short strings and one priority tag: " +
+  "`suggestion` (a concrete tip to start or finish it), " +
+  "`followup` (the natural next step after it's done), " +
+  "`question` (one clarifying question). Max ~12 words each. " +
+  "`priority` must be one of \"low\", \"medium\", \"high\", or \"urgent\" " +
+  "based on urgency and impact. No preamble. Return only the JSON object.";
+
+const VALID_PRIORITIES: Priority[] = ["low", "medium", "high", "urgent"];
+
+function parsePriority(v: unknown): Priority {
+  if (typeof v !== "string") return "medium";
+  const p = v.trim().toLowerCase() as Priority;
+  return VALID_PRIORITIES.includes(p) ? p : "medium";
+}
 
 type GenerateOptions = {
   apiKey: string;
@@ -101,10 +111,11 @@ function parseAIContent(content: string): Omit<AIOutput, "generatedAt" | "model"
   const suggestion = asString(o.suggestion);
   const followup = asString(o.followup);
   const question = asString(o.question);
+  const priority = parsePriority(o.priority);
   if (!suggestion || !followup || !question) {
     throw new AIGenerationError("Model response missing required fields", true);
   }
-  return { suggestion, followup, question };
+  return { suggestion, followup, question, priority };
 }
 
 function extractJSON(content: string): string | null {
