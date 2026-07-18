@@ -7,19 +7,28 @@ const STT_URL = `${OPENROUTER_BASE}/audio/transcriptions`;
 
 const SYSTEM_PROMPT =
   "You are a minimalist productivity assistant. For the given todo item, " +
-  "return JSON with three short strings and one priority tag: " +
-  "`suggestion` (a concrete tip to start or finish it), " +
-  "`followup` (the natural next step after it's done), " +
-  "`question` (one clarifying question). Max ~12 words each. " +
+  "return JSON with the following fields: " +
+  "`subtasks` (an array of 2-5 concrete, actionable sub-steps needed to " +
+  "complete the item — only if it is genuinely complex or multi-step; " +
+  "for simple/trivial items return an empty array), " +
   "`priority` must be one of \"low\", \"medium\", \"high\", or \"urgent\" " +
   "based on urgency and impact. No preamble. Return only the JSON object.";
 
 const VALID_PRIORITIES: Priority[] = ["low", "medium", "high", "urgent"];
+const MAX_SUBTASKS = 5;
 
 function parsePriority(v: unknown): Priority {
   if (typeof v !== "string") return "medium";
   const p = v.trim().toLowerCase() as Priority;
   return VALID_PRIORITIES.includes(p) ? p : "medium";
+}
+
+function parseSubtasks(v: unknown): string[] {
+  if (!Array.isArray(v)) return [];
+  return v
+    .map((s) => (typeof s === "string" ? s.trim() : ""))
+    .filter((s) => s.length > 0)
+    .slice(0, MAX_SUBTASKS);
 }
 
 type GenerateOptions = {
@@ -108,14 +117,9 @@ function parseAIContent(content: string): Omit<AIOutput, "generatedAt" | "model"
     throw new AIGenerationError("Model response was not valid JSON", true);
   }
   const o = obj as Record<string, unknown>;
-  const suggestion = asString(o.suggestion);
-  const followup = asString(o.followup);
-  const question = asString(o.question);
+  const subtasks = parseSubtasks(o.subtasks);
   const priority = parsePriority(o.priority);
-  if (!suggestion || !followup || !question) {
-    throw new AIGenerationError("Model response missing required fields", true);
-  }
-  return { suggestion, followup, question, priority };
+  return { subtasks, priority };
 }
 
 function extractJSON(content: string): string | null {
@@ -124,10 +128,6 @@ function extractJSON(content: string): string | null {
   const end = trimmed.lastIndexOf("}");
   if (start === -1 || end === -1 || end <= start) return null;
   return trimmed.slice(start, end + 1);
-}
-
-function asString(v: unknown): string {
-  return typeof v === "string" ? v.trim() : "";
 }
 
 export async function computeSignature(text: string): Promise<string> {

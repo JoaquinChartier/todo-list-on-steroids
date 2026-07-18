@@ -8,9 +8,7 @@ export const PRIORITY_ORDER: Record<Priority, number> = {
 };
 
 export type AIOutput = {
-  suggestion: string;
-  followup: string;
-  question: string;
+  subtasks: string[];
   priority: Priority;
   generatedAt: number;
   model: string;
@@ -25,9 +23,11 @@ export type Item = {
   ai?: AIOutput;
   aiSignature?: string;
   priority?: Priority;
+  parentId?: string;
 };
 
 export type NewItemInput = {
   text: string;
   done?: boolean;
+  parentId?: string;
 };

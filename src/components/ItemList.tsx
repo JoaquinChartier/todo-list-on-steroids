@@ -5,7 +5,6 @@ import { ItemRow } from "./Item";
 
 type Props = {
   items: Item[];
-  loadingIds: Set<string>;
   hasApiKey: boolean;
   onToggleDone: (item: Item) => void;
   onCommitEdit: (item: Item, nextText: string) => void;
@@ -14,7 +13,6 @@ type Props = {
 
 export function ItemList({
   items,
-  loadingIds,
   hasApiKey,
   onToggleDone,
   onCommitEdit,
@@ -27,8 +25,13 @@ export function ItemList({
     return <p className="empty-state">No items yet. Add one above.</p>;
   }
 
-  let active = items.filter((i) => !i.done);
-  const completed = items.filter((i) => i.done);
+  const childrenOf = (parentId: string) =>
+    items.filter((i) => i.parentId === parentId);
+
+  const isStandalone = (i: Item) => !i.parentId;
+
+  let active = items.filter((i) => !i.done && isStandalone(i));
+  const completed = items.filter((i) => i.done && isStandalone(i));
 
   if (sortByPriority) {
     active = [...active].sort((a, b) => {
@@ -39,17 +42,34 @@ export function ItemList({
     });
   }
 
-  const renderItem = (item: Item) => (
-    <ItemRow
-      key={item.id}
-      item={item}
-      loading={loadingIds.has(item.id)}
-      hasApiKey={hasApiKey}
-      onToggleDone={onToggleDone}
-      onCommitEdit={onCommitEdit}
-      onDelete={onDelete}
-    />
-  );
+  const renderItem = (item: Item): React.ReactNode => {
+    if (item.parentId) {
+      return (
+        <ItemRow
+          key={item.id}
+          item={item}
+          hasApiKey={hasApiKey}
+          hasChildren={false}
+          onToggleDone={onToggleDone}
+          onCommitEdit={onCommitEdit}
+          onDelete={onDelete}
+        />
+      );
+    }
+    const children = childrenOf(item.id);
+    return (
+      <ItemRow
+        key={item.id}
+        item={item}
+        hasApiKey={hasApiKey}
+        hasChildren={children.length > 0}
+        childrenNodes={children.map(renderItem)}
+        onToggleDone={onToggleDone}
+        onCommitEdit={onCommitEdit}
+        onDelete={onDelete}
+      />
+    );
+  };
 
   return (
     <div className="item-list-wrap">
@@ -80,7 +100,9 @@ export function ItemList({
             {showCompleted ? "Hide" : "Show"} {completed.length} completed
           </button>
           {showCompleted && (
-            <ul className="item-list">{completed.map(renderItem)}</ul>
+            <ul className="item-list">
+              {completed.map(renderItem)}
+            </ul>
           )}
         </div>
       )}

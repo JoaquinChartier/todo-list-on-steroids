@@ -352,31 +352,6 @@ body {
 }
 
 /* AI line (always visible, single truncated line) */
-.ai-wrap {
-  margin-top: 0.35rem;
-}
-
-.ai-detail {
-  margin-top: 0.3rem;
-  padding: 0.35rem 0.5rem 0.4rem;
-  background: var(--bg-elev-2);
-  border-radius: 4px;
-}
-
-.ai-list {
-  list-style: disc;
-  margin: 0;
-  padding-left: 1.1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-}
-
-.ai-list li {
-  color: var(--text);
-  font-size: 0.82rem;
-}
-
 .ai-line {
   margin: 0;
   padding: 0.1rem 0.2rem;
@@ -388,62 +363,43 @@ body {
   cursor: default;
   border-radius: 4px;
 }
-.ai-line:not(.empty):not(.loading) {
-  cursor: pointer;
-}
-.ai-line:not(.empty):not(.loading):hover {
-  color: var(--text);
-  background: var(--bg-elev-2);
-}
 .ai-line.empty {
   cursor: default;
   color: var(--text-faint);
   font-style: italic;
 }
-.ai-line.loading {
-  cursor: default;
+
+.item-list.nested {
+  margin: 0.2rem 0 0.4rem 1.6rem;
+  padding-left: 0.6rem;
+  border-left: 2px solid var(--border);
+}
+.item-list.nested .item {
+  margin-bottom: 0.35rem;
+  padding: 0.4rem 0.5rem;
+  font-size: 0.88rem;
 }
 
-.ai-meta {
-  display: flex;
+.collapse-btn {
+  display: inline-flex;
   align-items: center;
-  gap: 0.75rem;
-  margin-top: 0.25rem;
-  color: var(--text-faint);
-  font-size: 0.72rem;
-  font-family: var(--mono);
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  color: var(--text-dim);
+  font-size: 0.7rem;
+  pointer-events: none;
+  transition: transform 0.15s, color 0.12s;
+  transform: rotate(0deg);
 }
-
-.ai-model {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 200px;
+.has-children .item-main {
+  cursor: pointer;
 }
-
-.ai-shimmer {
-  display: inline-block;
-  height: 0.8em;
-  width: 70%;
-  vertical-align: middle;
-  background: linear-gradient(
-    90deg,
-    var(--bg-elev-2) 0%,
-    #2c2c34 50%,
-    var(--bg-elev-2) 100%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 1.2s infinite linear;
-  border-radius: 3px;
+.has-children .item-main:hover .collapse-btn {
+  color: var(--text);
 }
-
-@keyframes shimmer {
-  from {
-    background-position: 200% 0;
-  }
-  to {
-    background-position: -200% 0;
-  }
+.collapse-btn.collapsed {
+  transform: rotate(-90deg);
 }
 
 .empty-state {
