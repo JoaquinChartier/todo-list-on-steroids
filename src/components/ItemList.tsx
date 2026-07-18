@@ -44,28 +44,34 @@ export function ItemList({
     });
   }
 
-  const renderItem = (item: Item) => (
-    <ItemRow
-      key={item.id}
-      item={item}
-      loading={loadingIds.has(item.id)}
-      hasApiKey={hasApiKey}
-      onToggleDone={onToggleDone}
-      onCommitEdit={onCommitEdit}
-      onDelete={onDelete}
-    />
-  );
-
-  const renderItemWithChildren = (parent: Item) => {
-    const children = childrenOf(parent.id);
-    if (children.length === 0) return renderItem(parent);
+  const renderItem = (item: Item): React.ReactNode => {
+    if (item.parentId) {
+      return (
+        <ItemRow
+          key={item.id}
+          item={item}
+          loading={loadingIds.has(item.id)}
+          hasApiKey={hasApiKey}
+          hasChildren={false}
+          onToggleDone={onToggleDone}
+          onCommitEdit={onCommitEdit}
+          onDelete={onDelete}
+        />
+      );
+    }
+    const children = childrenOf(item.id);
     return (
-      <li key={parent.id} className="item-group">
-        {renderItem(parent)}
-        <ul className="item-list nested">
-          {children.map(renderItem)}
-        </ul>
-      </li>
+      <ItemRow
+        key={item.id}
+        item={item}
+        loading={loadingIds.has(item.id)}
+        hasApiKey={hasApiKey}
+        hasChildren={children.length > 0}
+        childrenNodes={children.map(renderItem)}
+        onToggleDone={onToggleDone}
+        onCommitEdit={onCommitEdit}
+        onDelete={onDelete}
+      />
     );
   };
 
@@ -83,7 +89,7 @@ export function ItemList({
         </div>
       )}
       {active.length > 0 ? (
-        <ul className="item-list">{active.map(renderItemWithChildren)}</ul>
+        <ul className="item-list">{active.map(renderItem)}</ul>
       ) : (
         <p className="empty-state">All done. Nice work.</p>
       )}
@@ -99,7 +105,7 @@ export function ItemList({
           </button>
           {showCompleted && (
             <ul className="item-list">
-              {completed.map(renderItemWithChildren)}
+              {completed.map(renderItem)}
             </ul>
           )}
         </div>

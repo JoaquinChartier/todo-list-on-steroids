@@ -423,6 +423,30 @@ body {
   margin-bottom: 0.2rem;
 }
 
+.collapse-btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  margin-left: -2px;
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition: transform 0.15s, color 0.12s;
+  transform: rotate(0deg);
+}
+.collapse-btn:hover {
+  color: var(--text);
+}
+.collapse-btn.collapsed {
+  transform: rotate(-90deg);
+}
+
 .ai-line {
   margin: 0;
   padding: 0.1rem 0.2rem;
