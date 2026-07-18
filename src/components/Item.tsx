@@ -34,26 +34,34 @@ export function ItemRow({
 
   return (
     <li className={`item${item.done ? " done" : ""}${hasChildren ? " has-children" : ""}`}>
-      <div className="item-main">
+      <div
+        className="item-main"
+        onClick={hasChildren ? () => setCollapsed((v) => !v) : undefined}
+        role={hasChildren ? "button" : undefined}
+        tabIndex={hasChildren ? 0 : undefined}
+        aria-expanded={hasChildren ? !collapsed : undefined}
+        aria-label={hasChildren ? (collapsed ? "expand subtasks" : "collapse subtasks") : undefined}
+      >
         <input
           type="checkbox"
           checked={item.done}
           onChange={() => onToggleDone(item)}
           aria-label="toggle done"
+          onClick={(e) => e.stopPropagation()}
         />
         {hasChildren && (
-          <button
-            type="button"
+          <span
             className={`collapse-btn${collapsed ? " collapsed" : ""}`}
-            onClick={() => setCollapsed((v) => !v)}
-            aria-label={collapsed ? "expand subtasks" : "collapse subtasks"}
-            title={collapsed ? "Expand subtasks" : "Collapse subtasks"}
+            aria-hidden="true"
           >
             ▾
-          </button>
+          </span>
         )}
         {item.priority && (
-          <span className={`priority-badge ${item.priority}`}>
+          <span
+            className={`priority-badge ${item.priority}`}
+            onClick={(e) => e.stopPropagation()}
+          >
             {PRIORITY_LABEL[item.priority]}
           </span>
         )}
@@ -69,7 +77,10 @@ export function ItemRow({
         ) : (
           <span
             className="item-text"
-            onClick={() => setEditing(true)}
+            onClick={(e) => {
+              e.stopPropagation();
+              setEditing(true);
+            }}
             title="Click to edit"
           >
             {item.text}
@@ -78,7 +89,10 @@ export function ItemRow({
         <button
           type="button"
           className="delete-btn"
-          onClick={() => onDelete(item)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(item);
+          }}
           title="Delete"
         >
           ×

@@ -424,23 +424,21 @@ body {
 }
 
 .collapse-btn {
-  flex-shrink: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 18px;
   height: 18px;
-  padding: 0;
-  margin-left: -2px;
-  background: transparent;
-  border: none;
   color: var(--text-dim);
   font-size: 0.7rem;
-  cursor: pointer;
+  pointer-events: none;
   transition: transform 0.15s, color 0.12s;
   transform: rotate(0deg);
 }
-.collapse-btn:hover {
+.has-children .item-main {
+  cursor: pointer;
+}
+.has-children .item-main:hover .collapse-btn {
   color: var(--text);
 }
 .collapse-btn.collapsed {
