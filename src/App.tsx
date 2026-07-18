@@ -12,7 +12,6 @@ import type { Item } from "./ai/types";
 export function App() {
   const { items, loaded, createItem, createChildItems, updateItem, removeItem, removeChildren } = useItems();
   const settings = useSettings();
-  const [loadingIds, setLoadingIds] = useState<Set<string>>(new Set());
   const [settingsOpen, setSettingsOpen] = useState(false);
   const appliedChildrenRef = useRef<Set<string>>(new Set());
 
@@ -31,19 +30,10 @@ export function App() {
     [updateItem, createChildItems],
   );
 
-  const markLoading = useCallback((itemId: string, loading: boolean) => {
-    setLoadingIds((prev) => {
-      const next = new Set(prev);
-      if (loading) next.add(itemId);
-      else next.delete(itemId);
-      return next;
-    });
-  }, []);
-
   const { generate, cancelAll } = useAI(
     { apiKey: settings.apiKey || null, model: settings.model },
     applyResult,
-    markLoading,
+    () => {},
   );
 
   const handleAdd = useCallback(
@@ -112,7 +102,6 @@ export function App() {
         {loaded ? (
           <ItemList
             items={items}
-            loadingIds={loadingIds}
             hasApiKey={!!settings.apiKey}
             onToggleDone={handleToggleDone}
             onCommitEdit={handleCommitEdit}

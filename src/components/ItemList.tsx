@@ -5,7 +5,6 @@ import { ItemRow } from "./Item";
 
 type Props = {
   items: Item[];
-  loadingIds: Set<string>;
   hasApiKey: boolean;
   onToggleDone: (item: Item) => void;
   onCommitEdit: (item: Item, nextText: string) => void;
@@ -14,7 +13,6 @@ type Props = {
 
 export function ItemList({
   items,
-  loadingIds,
   hasApiKey,
   onToggleDone,
   onCommitEdit,
@@ -50,7 +48,6 @@ export function ItemList({
         <ItemRow
           key={item.id}
           item={item}
-          loading={loadingIds.has(item.id)}
           hasApiKey={hasApiKey}
           hasChildren={false}
           onToggleDone={onToggleDone}
@@ -64,7 +61,6 @@ export function ItemList({
       <ItemRow
         key={item.id}
         item={item}
-        loading={loadingIds.has(item.id)}
         hasApiKey={hasApiKey}
         hasChildren={children.length > 0}
         childrenNodes={children.map(renderItem)}

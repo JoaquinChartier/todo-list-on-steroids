@@ -11,7 +11,6 @@ const PRIORITY_LABEL: Record<Priority, string> = {
 
 type Props = {
   item: Item;
-  loading: boolean;
   hasApiKey: boolean;
   hasChildren: boolean;
   childrenNodes?: React.ReactNode;
