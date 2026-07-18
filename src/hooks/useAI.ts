@@ -49,8 +49,8 @@ export function useAI(
       applyResultRef.current(itemId, result, signature);
     } catch (err) {
       if ((err as Error).name === "AbortError") return;
-      const signature = await computeSignature(text).catch(() => "");
-      applyResultRef.current(itemId, undefined, signature);
+      // Preserve existing AI result — do not overwrite with undefined on error.
+      // Signature stays from last successful generation so future edits can retry.
     } finally {
       if (pendingRef.current.get(itemId) === pending) {
         pendingRef.current.delete(itemId);

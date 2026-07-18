@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { Item, NewItemInput } from "../ai/types";
 import { listItems, putItem, deleteItem } from "../db/store";
 import { MAX_ITEM_TEXT } from "../components/AddItem";
@@ -27,6 +27,8 @@ type UseItems = {
 export function useItems(): UseItems {
   const [items, setItems] = useState<Item[]>([]);
   const [loaded, setLoaded] = useState(false);
+  const itemsRef = useRef<Item[]>([]);
+  itemsRef.current = items;
 
   useEffect(() => {
     let cancelled = false;
@@ -58,18 +60,11 @@ export function useItems(): UseItems {
 
   const updateItem = useCallback(
     async (id: string, patch: Partial<Item>) => {
-      let updated: Item | undefined;
-      setItems((prev) => {
-        const next = prev.map((it) => {
-          if (it.id !== id) return it;
-          updated = { ...it, ...patch, updatedAt: Date.now() };
-          return updated;
-        });
-        return next;
-      });
-      if (updated) {
-        await putItem(updated);
-      }
+      const current = itemsRef.current.find((it) => it.id === id);
+      if (!current) return undefined;
+      const updated: Item = { ...current, ...patch, updatedAt: Date.now() };
+      setItems((prev) => prev.map((it) => (it.id === id ? updated : it)));
+      await putItem(updated);
       return updated;
     },
     [],
