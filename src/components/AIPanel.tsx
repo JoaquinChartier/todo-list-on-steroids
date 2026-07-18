@@ -23,8 +23,8 @@ export function AIPanel({ ai, loading }: Props) {
 
   const hasSubtasks = ai.subtasks.length > 0;
   const summary = hasSubtasks
-    ? `${ai.subtasks.length} subtasks · ${ai.followup} · ${ai.question}`
-    : `${ai.followup} · ${ai.question}`;
+    ? `${ai.subtasks.length} subtasks`
+    : "Simple item — no subtasks needed";
 
   return (
     <div className="ai-wrap">
@@ -40,17 +40,15 @@ export function AIPanel({ ai, loading }: Props) {
       {metaOpen && (
         <div className="ai-detail">
           <div className="ai-list" onClick={() => setMetaOpen(false)}>
-            {hasSubtasks && (
+            {hasSubtasks ? (
               <ol className="subtask-list">
                 {ai.subtasks.map((s, i) => (
                   <li key={i}>{s}</li>
                 ))}
               </ol>
+            ) : (
+              <p className="ai-line empty">No subtasks inferred.</p>
             )}
-            <ul className="ai-extra">
-              <li><span className="ai-tag">next</span> {ai.followup}</li>
-              <li><span className="ai-tag">ask</span> {ai.question}</li>
-            </ul>
           </div>
           <div className="ai-meta">
             <span>{new Date(ai.generatedAt).toLocaleDateString("en-GB", { year: "2-digit", month: "2-digit", day: "2-digit" })}</span>

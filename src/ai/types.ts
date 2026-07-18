@@ -9,8 +9,6 @@ export const PRIORITY_ORDER: Record<Priority, number> = {
 
 export type AIOutput = {
   subtasks: string[];
-  followup: string;
-  question: string;
   priority: Priority;
   generatedAt: number;
   model: string;

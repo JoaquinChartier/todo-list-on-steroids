@@ -11,8 +11,6 @@ const SYSTEM_PROMPT =
   "`subtasks` (an array of 2-5 concrete, actionable sub-steps needed to " +
   "complete the item — only if it is genuinely complex or multi-step; " +
   "for simple/trivial items return an empty array), " +
-  "`followup` (the natural next step after it's done), " +
-  "`question` (one clarifying question). Max ~12 words each. " +
   "`priority` must be one of \"low\", \"medium\", \"high\", or \"urgent\" " +
   "based on urgency and impact. No preamble. Return only the JSON object.";
 
@@ -120,13 +118,8 @@ function parseAIContent(content: string): Omit<AIOutput, "generatedAt" | "model"
   }
   const o = obj as Record<string, unknown>;
   const subtasks = parseSubtasks(o.subtasks);
-  const followup = asString(o.followup);
-  const question = asString(o.question);
   const priority = parsePriority(o.priority);
-  if (!followup || !question) {
-    throw new AIGenerationError("Model response missing required fields", true);
-  }
-  return { subtasks, followup, question, priority };
+  return { subtasks, priority };
 }
 
 function extractJSON(content: string): string | null {
@@ -135,10 +128,6 @@ function extractJSON(content: string): string | null {
   const end = trimmed.lastIndexOf("}");
   if (start === -1 || end === -1 || end <= start) return null;
   return trimmed.slice(start, end + 1);
-}
-
-function asString(v: unknown): string {
-  return typeof v === "string" ? v.trim() : "";
 }
 
 export async function computeSignature(text: string): Promise<string> {
