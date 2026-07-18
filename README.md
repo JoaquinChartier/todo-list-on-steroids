@@ -1,8 +1,21 @@
-# Todo List on Steroids
+# TODOs on Steroids
 
 A minimalist, dark-mode-only todo list that uses [OpenRouter](https://openrouter.ai)
-to generate a short suggestion, follow-up, and clarifying question for each item.
-Everything is stored locally in your browser via IndexedDB. No accounts, no server.
+to infer priority and break complex items into subtasks. Everything is stored
+locally in your browser via IndexedDB. No accounts, no server.
+
+![screenshot](./screenshot.png)
+
+## Features
+
+- **AI subtasks** — for complex items, the model generates 2–5 actionable
+  subtasks as child items. Simple items are left alone.
+- **Priority inference** — each item is tagged `low` / `med` / `high` /
+  `urgent` and can be sorted by priority.
+- **Voice input** — dictate items via the mic button (OpenRouter STT).
+- **Local-first** — all items live in IndexedDB; your API key stays in
+  `localStorage`.
+- **Dark mode only** — plain CSS, no theme system.
 
 ## Quick start
 
@@ -14,18 +27,18 @@ npm run preview  # serve the production build
 ```
 
 Then open **Settings** (top-right) and paste your OpenRouter API key. The key is
-stored only in this browser's `localStorage` and is sent solely to OpenRouter to
-generate notes for your items.
+stored only in this browser's `localStorage` and is sent solely to OpenRouter.
 
 ## How AI generation works
 
-- A note is generated **once** when an item is created.
+- When an item is created, the model returns a `priority` and (if the item is
+  complex) a list of `subtasks`. Subtasks are created as child items under the
+  parent.
 - On edit, a signature (`sha256` of the normalized text) is compared to the last
   one the model saw. If it changed, generation is re-enqueued (debounced 800ms).
-- You can also trigger **Regenerate** manually from an item's expanded panel.
-- Generation never runs on read, mount, or focus — only on create / meaningful
-  edit / explicit action.
 - In-flight requests are abortable, so rapid edits don't race.
+- Errors (network, 429, 5xx) do not overwrite existing AI results — previous
+  notes and subtasks are preserved.
 
 ## Privacy
 
@@ -41,7 +54,7 @@ generate notes for your items.
 - IndexedDB via `idb-keyval`
 - Plain CSS, dark palette hardcoded (no theme system by design)
 - OpenRouter Chat Completions (default model `openrouter/z-ai/glm-5.2`,
-  configurable in Settings)
+  configurable in Settings) + OpenRouter STT (`openai/whisper-1`)
 
 ## Project layout
 
@@ -49,9 +62,9 @@ generate notes for your items.
 src/
   main.tsx, App.tsx
   db/store.ts        # IndexedDB wrapper
-  ai/openrouter.ts   # client, prompt, JSON parsing, signature
+  ai/openrouter.ts   # client, prompt, JSON parsing, signature, STT
   ai/types.ts
-  components/        # ItemList, Item, ItemEditor, AIPanel, AddItem, Settings
-  hooks/             # useItems, useAI, useSettings
+  components/        # ItemList, Item, ItemEditor, AddItem, Settings
+  hooks/             # useItems, useAI, useSettings, useVoiceInput
   styles.css         # dark-only
 ```
