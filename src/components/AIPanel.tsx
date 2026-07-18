@@ -14,23 +14,14 @@ export function AIPanel({ ai, loading }: Props) {
     );
   }
 
-  if (!ai) {
-    return <p className="ai-line empty">No AI notes.</p>;
-  }
-
-  const hasSubtasks = ai.subtasks.length > 0;
+  if (!ai || ai.subtasks.length === 0) return null;
 
   return (
-    <div className="ai-wrap">
-      {hasSubtasks ? (
-        <ol className="subtask-list">
-          {ai.subtasks.map((s, i) => (
-            <li key={i}>{s}</li>
-          ))}
-        </ol>
-      ) : (
-        <p className="ai-line empty">No subtasks inferred.</p>
-      )}
-    </div>
+    <ol className="subtask-list">
+      {ai.subtasks.map((s, i) => (
+        <li key={i}>{s}</li>
+      ))}
+    </ol>
   );
 }
+
