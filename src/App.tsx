@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { AddItem } from "./components/AddItem";
 import { ItemList } from "./components/ItemList";
 import { Settings } from "./components/Settings";
@@ -10,10 +10,11 @@ import { clearAllItems } from "./db/store";
 import type { Item } from "./ai/types";
 
 export function App() {
-  const { items, loaded, createItem, updateItem, removeItem } = useItems();
+  const { items, loaded, createItem, createChildItems, updateItem, removeItem, removeChildren } = useItems();
   const settings = useSettings();
   const [loadingIds, setLoadingIds] = useState<Set<string>>(new Set());
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const appliedChildrenRef = useRef<Set<string>>(new Set());
 
   const applyResult = useCallback(
     (itemId: string, result: Item["ai"], signature: string) => {
@@ -22,8 +23,12 @@ export function App() {
         aiSignature: signature,
         priority: result?.priority,
       });
+      if (result && result.subtasks.length > 0 && !appliedChildrenRef.current.has(itemId)) {
+        appliedChildrenRef.current.add(itemId);
+        createChildItems(itemId, result.subtasks);
+      }
     },
-    [updateItem],
+    [updateItem, createChildItems],
   );
 
   const markLoading = useCallback((itemId: string, loading: boolean) => {
@@ -70,9 +75,16 @@ export function App() {
   const handleDelete = useCallback(
     (item: Item) => {
       cancelAll();
+      if (item.parentId) {
+        appliedChildrenRef.current.delete(item.parentId);
+      }
+      if (appliedChildrenRef.current.has(item.id)) {
+        appliedChildrenRef.current.delete(item.id);
+        removeChildren(item.id);
+      }
       removeItem(item.id);
     },
-    [removeItem, cancelAll],
+    [removeItem, removeChildren, cancelAll],
   );
 
   const handleClearAll = useCallback(async () => {

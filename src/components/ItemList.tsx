@@ -27,8 +27,13 @@ export function ItemList({
     return <p className="empty-state">No items yet. Add one above.</p>;
   }
 
-  let active = items.filter((i) => !i.done);
-  const completed = items.filter((i) => i.done);
+  const childrenOf = (parentId: string) =>
+    items.filter((i) => i.parentId === parentId);
+
+  const isStandalone = (i: Item) => !i.parentId;
+
+  let active = items.filter((i) => !i.done && isStandalone(i));
+  const completed = items.filter((i) => i.done && isStandalone(i));
 
   if (sortByPriority) {
     active = [...active].sort((a, b) => {
@@ -51,6 +56,19 @@ export function ItemList({
     />
   );
 
+  const renderItemWithChildren = (parent: Item) => {
+    const children = childrenOf(parent.id);
+    if (children.length === 0) return renderItem(parent);
+    return (
+      <li key={parent.id} className="item-group">
+        {renderItem(parent)}
+        <ul className="item-list nested">
+          {children.map(renderItem)}
+        </ul>
+      </li>
+    );
+  };
+
   return (
     <div className="item-list-wrap">
       {active.length > 0 && (
@@ -65,7 +83,7 @@ export function ItemList({
         </div>
       )}
       {active.length > 0 ? (
-        <ul className="item-list">{active.map(renderItem)}</ul>
+        <ul className="item-list">{active.map(renderItemWithChildren)}</ul>
       ) : (
         <p className="empty-state">All done. Nice work.</p>
       )}
@@ -80,7 +98,9 @@ export function ItemList({
             {showCompleted ? "Hide" : "Show"} {completed.length} completed
           </button>
           {showCompleted && (
-            <ul className="item-list">{completed.map(renderItem)}</ul>
+            <ul className="item-list">
+              {completed.map(renderItemWithChildren)}
+            </ul>
           )}
         </div>
       )}

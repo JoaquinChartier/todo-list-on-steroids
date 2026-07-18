@@ -20,8 +20,10 @@ type UseItems = {
   items: Item[];
   loaded: boolean;
   createItem: (input: NewItemInput) => Promise<Item>;
+  createChildItems: (parentId: string, texts: string[]) => Promise<Item[]>;
   updateItem: (id: string, patch: Partial<Item>) => Promise<Item | undefined>;
   removeItem: (id: string) => Promise<void>;
+  removeChildren: (parentId: string) => Promise<void>;
 };
 
 export function useItems(): UseItems {
@@ -52,11 +54,32 @@ export function useItems(): UseItems {
       done: input.done ?? false,
       createdAt: now,
       updatedAt: now,
+      ...(input.parentId ? { parentId: input.parentId } : {}),
     };
     await putItem(item);
     setItems((prev) => [item, ...prev]);
     return item;
   }, []);
+
+  const createChildItems = useCallback(
+    async (parentId: string, texts: string[]) => {
+      const now = Date.now();
+      const children: Item[] = texts
+        .filter((t) => t.trim().length > 0)
+        .map((t, i) => ({
+          id: uuid(),
+          text: clampText(t.trim()),
+          done: false,
+          createdAt: now + i,
+          updatedAt: now + i,
+          parentId,
+        }));
+      await Promise.all(children.map(putItem));
+      setItems((prev) => [...children, ...prev]);
+      return children;
+    },
+    [],
+  );
 
   const updateItem = useCallback(
     async (id: string, patch: Partial<Item>) => {
@@ -75,5 +98,11 @@ export function useItems(): UseItems {
     await deleteItem(id);
   }, []);
 
-  return { items, loaded, createItem, updateItem, removeItem };
+  const removeChildren = useCallback(async (parentId: string) => {
+    const children = itemsRef.current.filter((it) => it.parentId === parentId);
+    setItems((prev) => prev.filter((it) => it.parentId !== parentId));
+    await Promise.all(children.map((c) => deleteItem(c.id)));
+  }, []);
+
+  return { items, loaded, createItem, createChildItems, updateItem, removeItem, removeChildren };
 }

@@ -70,9 +70,10 @@ export function ItemRow({
           ×
         </button>
       </div>
-      {hasApiKey ? (
+      {hasApiKey && !item.parentId && (
         <AIPanel ai={item.ai} loading={loading} />
-      ) : (
+      )}
+      {!hasApiKey && !item.parentId && (
         <p className="ai-line empty">
           Add your OpenRouter API key in Settings to generate AI notes.
         </p>

@@ -21,7 +21,10 @@ export function AIPanel({ ai, loading }: Props) {
     return <p className="ai-line empty">No AI notes.</p>;
   }
 
-  const summary = `${ai.suggestion} · ${ai.followup} · ${ai.question}`;
+  const hasSubtasks = ai.subtasks.length > 0;
+  const summary = hasSubtasks
+    ? `${ai.subtasks.length} subtasks · ${ai.followup} · ${ai.question}`
+    : `${ai.followup} · ${ai.question}`;
 
   return (
     <div className="ai-wrap">
@@ -36,11 +39,19 @@ export function AIPanel({ ai, loading }: Props) {
       )}
       {metaOpen && (
         <div className="ai-detail">
-          <ul className="ai-list" onClick={() => setMetaOpen(false)}>
-            <li>{ai.suggestion}</li>
-            <li>{ai.followup}</li>
-            <li>{ai.question}</li>
-          </ul>
+          <div className="ai-list" onClick={() => setMetaOpen(false)}>
+            {hasSubtasks && (
+              <ol className="subtask-list">
+                {ai.subtasks.map((s, i) => (
+                  <li key={i}>{s}</li>
+                ))}
+              </ol>
+            )}
+            <ul className="ai-extra">
+              <li><span className="ai-tag">next</span> {ai.followup}</li>
+              <li><span className="ai-tag">ask</span> {ai.question}</li>
+            </ul>
+          </div>
           <div className="ai-meta">
             <span>{new Date(ai.generatedAt).toLocaleDateString("en-GB", { year: "2-digit", month: "2-digit", day: "2-digit" })}</span>
             <span className="ai-model">{ai.model}</span>
