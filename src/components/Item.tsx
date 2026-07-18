@@ -1,7 +1,6 @@
 import { useState } from "react";
 import type { Item, Priority } from "../ai/types";
 import { ItemEditor } from "./ItemEditor";
-import { AIPanel } from "./AIPanel";
 
 const PRIORITY_LABEL: Record<Priority, string> = {
   low: "low",
@@ -23,7 +22,6 @@ type Props = {
 
 export function ItemRow({
   item,
-  loading,
   hasApiKey,
   hasChildren,
   childrenNodes,
@@ -86,9 +84,6 @@ export function ItemRow({
           ×
         </button>
       </div>
-      {hasApiKey && !item.parentId && (
-        <AIPanel ai={item.ai} loading={loading} />
-      )}
       {!hasApiKey && !item.parentId && (
         <p className="ai-line empty">
           Add your OpenRouter API key in Settings to generate AI notes.
